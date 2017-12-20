@@ -1,0 +1,27 @@
+{
+  "name": "json-translate",
+  "version": "1.0.0",
+  "description": "gui for translations in json files",
+  "main": "index.js",
+  "scripts": {},
+  "bin": {
+    "json-translate": "index.js"
+  },
+  "preferGlobal": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myvzar/json-translate.git"
+  },
+  "keywords": [
+    "json",
+    "translate",
+    "gui"
+  ],
+  "author": "myvzar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/myvzar/json-translate/issues"
+  },
+  "homepage": "https://github.com/myvzar/json-translate#readme",
+  "dependencies": {}
+}
