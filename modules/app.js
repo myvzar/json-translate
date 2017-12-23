@@ -1,6 +1,9 @@
 const path = require('path');
+const translate = require('google-translate-api');
+
 const argv = require(path.resolve(__dirname,'argv'));
 const json = require(path.resolve(__dirname,'json'));
+const tree = require(path.resolve(__dirname,'tree'));
 
 let defaultTask = null;
 const options = {};
@@ -8,12 +11,14 @@ const tasks = {};
 
 let appInstance = null;
 
-module.exports = function(appPath, projectPath) {
+module.exports = function(appPath, projectPath, packageField) {
   return appInstance || (appInstance = new class App {
 
     constructor() {
       this.appPath = appPath;
       this.projectPath = projectPath;
+      this.packageField = packageField;
+      this.package = null;
     }
 
     task(name, description, fn, isDefault = false) {
@@ -65,6 +70,43 @@ module.exports = function(appPath, projectPath) {
 
     createLangFile(languagesFolder,languageFile) {
       return json.writeIfNotExist(this.langFilePath(languagesFolder, languageFile), {})
+    }
+
+    initPackage() {
+      return this.getPackage()
+        .then(packageJson => this.package = packageJson[this.packageField])
+        .catch((e) => console.error('Need to init project', e))
+    }
+
+    getTree(optionField) {
+      return this.getPackage()
+        .then(packageJson => packageJson[optionField])
+        .then(opts => {
+          if(!opts) { throw new Error('Need to init project'); }
+          return new tree(opts, this.projectPath);
+        })
+    }
+
+    translateToAll(dVal) {
+      if(!this.package.defLang) return Promise.reject('Need to set default language');
+      if(!dVal) return Promise.reject('Empty Default language text');
+      const Languages = Object.keys(this.package.languages);
+      const defLangIndex = Languages.indexOf(this.package.defLang);
+      if(~defLangIndex) Languages.splice(defLangIndex, 1);
+      if(!Languages.length) return Promise.reject('Languages list is empty');
+      return Promise.all(Languages.map(l => this.translateItem(dVal, this.package.defLang, l)))
+        .then((r) => {
+          const result = {};
+          result[this.package.defLang] = dVal;
+          r.forEach(tri => result[tri.t] = tri.res);
+          return result;
+        });
+    }
+
+    translateItem(text, from, to) {
+      return translate(text, { from, to })
+        .then(tr => ({ t : to, res : tr.text }))
+        .catch((e) => console.log('Translate error', e))
     }
 
   })

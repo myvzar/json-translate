@@ -23,5 +23,7 @@
     "url": "https://github.com/myvzar/json-translate/issues"
   },
   "homepage": "https://github.com/myvzar/json-translate#readme",
-  "dependencies": {}
+  "dependencies": {
+    "google-translate-api": "^2.3.0"
+  }
 }
