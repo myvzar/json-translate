@@ -1,0 +1,6 @@
+<li>
+  <a ng-class="{ 'is-active': item.isActive() ,'has-child':item.hasSubItems}" ng-bind="::item.$name" ng-click="item.open()"></a>
+  <ul ng-if="item.opened()">
+    <menu-item ng-repeat="(key, mItem) in item.items track by mItem.$path" ng-if="!mItem.$isItem" item="mItem"></menu-item>
+  </ul>
+</li>

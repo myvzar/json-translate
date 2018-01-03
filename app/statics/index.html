@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Translate Mabaya</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.0/css/bulma.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body ng-app="mabayaTranslate">
+
+<div id="wrapper" class="columns is-gapless" ng-controller="root as $root">
+
+  <div class="column is-narrow" id="side" ng-if="$root.loaded">
+    <aside class="menu" style="padding: 5px;">
+      <ul class="menu-list">
+        <li><a ng-class="{ 'is-active': $root.menu.isActive()}" ng-click="$root.menu.open()">Root</a></li>
+        <li class="main-menu-separator"></li>
+        <menu-item ng-repeat="(key, mItem) in $root.menu.items track by mItem.$path" ng-if="!mItem.$isItem" item="mItem"></menu-item>
+      </ul>
+    </aside>
+  </div>
+
+  <div class="column" id="content" ng-if="$root.loaded && $root.opened.item" style="padding-bottom: 100px!important;">
+    <div id="page-content-wrapper" class="container is-fluid">
+
+      <h1 class="title" style="color: white; text-transform: capitalize" ng-bind="$root.opened.item.$name"></h1>
+
+      <nav
+        class="breadcrumb has-arrow-separator"
+        aria-label="breadcrumbs"
+        ng-if="$root.opened.item.$linkedBreadcrumb && $root.opened.item.$linkedBreadcrumb.length"
+      >
+        <ul>
+          <li><a ng-click="$root.goToPath()">root</a></li>
+          <li ng-repeat="bItem in $root.opened.item.$linkedBreadcrumb" ng-class="$last?'is-active':null">
+            <a ng-click="$root.goToPath(bItem.link)" aria-current="page" ng-bind="::bItem.title"></a>
+          </li>
+        </ul>
+      </nav>
+
+      <div id="page-content" ng-if="$root.opened.item.items" style="overflow: auto; max-width: calc(100vw - 364px);">
+
+        <table class="table is-fullwidth is-hoverable is-striped is-narrow">
+          <thead>
+          <tr>
+            <th style="width: 1%"></th>
+            <th style="width: 1%"></th>
+            <th ng-repeat="lang in ::$content.languages" ng-bind="lang.display"></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr ng-repeat="($key,$item) in $root.opened.item.items">
+            <th style="width: 1%">
+              <div ng-bind="::$key"></div>
+              <input class="item-path" ng-value="::$item.path" readonly>
+            </th>
+            <td style="width: 1%">
+              <button class="button" style="padding: 0 10px;" ng-click="$root.copyPath($event)">
+                <img src="https://icongr.am/feather/copy.svg" alt="copy"
+                     style="width: 16px;height: 16px;max-width: 16px;">
+              </button>
+              <button class="button" style="padding: 0 10px;" ng-click="$root.editItem($item)">
+                <img src="https://icongr.am/feather/edit.svg" alt="copy"
+                     style="width: 16px;height: 16px;max-width: 16px;">
+              </button>
+            </td>
+            <td ng-repeat="lang in ::$content.languages" ng-bind="$item.value[lang.name]"
+                ng-class="!$item.value[lang.name] ? 'missedTranslate' : null"></td>
+          </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <pre>{{$root.options | json}}</pre>
+
+    </div>
+  </div>
+
+  <button id="addBtn" ng-click="$root.addWord()">
+    <img src="https://icongr.am/clarity/plus.svg?color=ffffff" alt="add">
+  </button>
+
+</div>
+
+<div id="loader-wrapper">
+  <div class="spinner">
+    <div class="dot1"></div>
+    <div class="dot2"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.6/angular.min.js"></script>
+<script src="/js/ui.js"></script>
+
+</body>
+</html>
