@@ -6,38 +6,23 @@ const App = (require(
   require('path').resolve(__dirname,'modules','app.js')))
 (__dirname, process.cwd(), field);
 
-App.task('start', 'Start translate current project',(options) => {
+const Manager = (require('./app'))(App);
 
-}, true);
+App.task('start', 'Start translate current project', Manager, true);
 
 App.task('item', 'Add translate',(options) => {
   const taskIndex = process.argv.indexOf('item');
   const [key, enValue] = process.argv.slice(taskIndex + 1, taskIndex + 3);
-
   if(key && enValue) {
     App.initPackage()
       .then(() => App.translateToAll(enValue))
-      .then(item => {
-
-        console.log('T',item);
-
-      })
-
-
+      .then(item => App.uppercaseCheck(item, options.uppercase))
+      .then(item => App.getTree()
+        .then($tree => $tree.init().then(()=>$tree.addMultiple(key,item))))
+      .then($tree => $tree.save())
+      .then(() => {console.log('Item added to languages')})
+      .catch(e => console.error(e));
   }
-
-
-
-  // App.getTree(field)
-  //   .then(($tree) => {
-  //     $tree.init()
-  //       .then(() => {
-  //
-  //       })
-  //       .catch(e => console.error(e));
-  //   })
-  //   .catch(e => console.error(e));
-
 });
 
 App.task('init', 'Init new project', (options) => {
@@ -99,6 +84,11 @@ App.options({
   // item
   canRewrite : {
     alias : 'r',
+    asSetBool : true
+  },
+
+  uppercase : {
+    alias : 'u',
     asSetBool : true
   },
 

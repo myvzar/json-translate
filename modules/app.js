@@ -80,7 +80,7 @@ module.exports = function(appPath, projectPath, packageField) {
 
     getTree(optionField) {
       return this.getPackage()
-        .then(packageJson => packageJson[optionField])
+        .then(packageJson => packageJson[this.packageField])
         .then(opts => {
           if(!opts) { throw new Error('Need to init project'); }
           return new tree(opts, this.projectPath);
@@ -91,7 +91,7 @@ module.exports = function(appPath, projectPath, packageField) {
       if(!this.package.defLang) return Promise.reject('Need to set default language');
       if(!dVal) return Promise.reject('Empty Default language text');
       const Languages = Object.keys(this.package.languages);
-      const defLangIndex = Languages.indexOf(this.package.defLang);
+      const defLangIndex = Languages.indexOf(this.package && this.package.defLang || 'en');
       if(~defLangIndex) Languages.splice(defLangIndex, 1);
       if(!Languages.length) return Promise.reject('Languages list is empty');
       return Promise.all(Languages.map(l => this.translateItem(dVal, this.package.defLang, l)))
@@ -107,6 +107,17 @@ module.exports = function(appPath, projectPath, packageField) {
       return translate(text, { from, to })
         .then(tr => ({ t : to, res : tr.text }))
         .catch((e) => console.log('Translate error', e))
+    }
+
+    uppercaseCheck(items, needToUppercase) {
+      if(items) {
+        for(let i in items) {
+          if(items.hasOwnProperty(i)) {
+            items[i] = items[i].substr(0, 1)[needToUppercase ? 'toUpperCase' : 'toLowerCase']() + items[i].substr(1);
+          }
+        }
+      }
+      return items;
     }
 
   })
