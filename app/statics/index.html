@@ -46,14 +46,14 @@
           <tr>
             <th style="width: 1%"></th>
             <th style="width: 1%"></th>
-            <th ng-repeat="lang in ::$content.languages" ng-bind="lang.display"></th>
+            <th ng-repeat="(lang, lInfo) in ::$root.options.languages" ng-bind="lInfo.display"></th>
           </tr>
           </thead>
           <tbody>
-          <tr ng-repeat="($key,$item) in $root.opened.item.items">
+          <tr ng-repeat="($key,$item) in $root.opened.item.items" ng-if="$item.$isItem">
             <th style="width: 1%">
               <div ng-bind="::$key"></div>
-              <input class="item-path" ng-value="::$item.path" readonly>
+              <input class="item-path" ng-value="::$item.$path" readonly>
             </th>
             <td style="width: 1%">
               <button class="button" style="padding: 0 10px;" ng-click="$root.copyPath($event)">
@@ -65,15 +65,14 @@
                      style="width: 16px;height: 16px;max-width: 16px;">
               </button>
             </td>
-            <td ng-repeat="lang in ::$content.languages" ng-bind="$item.value[lang.name]"
-                ng-class="!$item.value[lang.name] ? 'missedTranslate' : null"></td>
+            <td ng-repeat="(lang, lInfo) in ::$root.options.languages track by lang" ng-bind="$item[lang]"
+                ng-class="!$item[lang] ? 'missedTranslate' : null">
+            </td>
           </tr>
           </tbody>
         </table>
 
       </div>
-
-      <pre>{{$root.options | json}}</pre>
 
     </div>
   </div>

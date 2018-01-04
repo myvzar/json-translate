@@ -6,9 +6,7 @@ const App = (require(
   require('path').resolve(__dirname,'modules','app.js')))
 (__dirname, process.cwd(), field);
 
-const Manager = (require('./app'))(App);
-
-App.task('start', 'Start translate current project', Manager, true);
+App.task('start', 'Start translate current project', (require('./app'))(App), true);
 
 App.task('item', 'Add translate',(options) => {
   const taskIndex = process.argv.indexOf('item');

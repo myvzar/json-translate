@@ -1,0 +1,44 @@
+<div class="modal is-active" id="newModal">
+  <div class="modal-background" ng-click="$reject()"></div>
+  <div class="modal-card">
+
+    <header class="tabs">
+      <ul>
+        <li ng-if="resolve.isNew || resolve.$isItem" ng-class="resolve.$isItem ? 'is-active' : ''"><a ng-click="resolve.$isItem = true">Item</a></li>
+        <li ng-if="resolve.isNew || !resolve.$isItem" ng-class="!resolve.$isItem ? 'is-active' : ''"><a ng-click="resolve.$isItem = false">Category</a></li>
+      </ul>
+      <button class="delete" ng-click="$reject()" style="position: absolute;right: 6px;" aria-label="close"></button>
+    </header>
+
+    <section class="modal-card-body">
+      <div class="field">
+        <label class="label">Name</label>
+        <div class="control">
+          <input class="input" type="text" ng-model="resolve.$name" ng-readonly="!resolve.isNew">
+        </div>
+      </div>
+    </section>
+
+    <fieldset class="modal-card-body" style="background: #fafafa" ng-if="resolve.$isItem" ng-disabled="inLoading">
+      <div ng-repeat="(lang, lInfo) in ::options.languages track by lang" style="margin-bottom: 15px">
+        <label class="label" ng-bind="::lInfo.display"></label>
+        <div class="field has-addons">
+          <div class="control" style="flex-grow: 1;">
+            <input class="input" type="text" ng-model="resolve[lang]">
+          </div>
+          <div class="control" ng-if="::(lang === options.defLang)">
+            <button class="button" ng-disabled="!resolve[lang]" ng-click="translateAll(resolve[lang])">
+              <img src="https://icongr.am/feather/server.svg" alt="copy" style="width: 16px;height: 16px;max-width: 16px;">
+            </button>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <footer class="modal-card-foot">
+      <button class="button is-success" ng-disabled="!resolve.$name">Save changes</button>
+      <button class="button" ng-click="$reject()">Cancel</button>
+    </footer>
+
+  </div>
+</div>

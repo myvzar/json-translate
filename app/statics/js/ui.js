@@ -80,13 +80,30 @@
 
       $tree.init = () => $tree.loading;
 
+      $tree.get = function(path){
+        if(path) {
+          return (path.split('.')).reduce((item,path) => {
+            if(item && !item.$isItem && item.items && item.items.hasOwnProperty(path)) {
+              return item.items[path];
+            }
+            return null;
+          }, $tree.items);
+        }
+        return $tree.items;
+      };
+
+      $tree.new = function(opt = {}){
+        return new $treeItem(opt);
+      }
+
     })
 
     .service('$opened',function(){
       this.item = null;
+      this.options = {};
     })
 
-    .controller('root', function($tree, $opened){
+    .controller('root', function($tree, $opened, $itemModal){
 
       const $root = this;
 
@@ -96,174 +113,12 @@
       $root.opened = $opened;
 
       $tree.init().then((data) => {
-        $root.options = data.options;
+        $root.options = $opened.options = data.options;
         $root.loaded = true;
         $root.menu = $tree.items;
         $root.menu.$name = 'Root';
-        $opened.item = $root.menu;
+        $root.goToPath();
         document.getElementById('loader-wrapper').remove();
-      });
-
-    })
-
-    // DIRECTIVES
-
-    .directive('menuItem',function(){
-      return {
-        restrict : 'E',
-        templateUrl : '/tpl/_menu_item_.html',
-        replace : true,
-        scope : { item : '=' }
-      }
-    })
-
-    .name;
-
-    z.service('session',function(){
-      this.inited = false;
-      this.info = {};
-
-      this.init = (data) => {
-        this.info = Object.assign(this.info,data);
-        return this.inited = true;
-      }
-
-    })
-
-    .service('$tree',(function(){
-
-      function $tree(){
-        this.root = new treeNode({name:'root',path:null});
-        this.root.isRoot = true;
-      }
-
-      function makeBreadcrumb(pathArray){
-        if(pathArray && pathArray.length)
-        {
-          return (pathArray||[]).reduce((previousValue, currentValue, index, array)=>{
-            previousValue.push({
-              title : currentValue,
-              link : array.slice(0,index + 1).join('.'),
-            });
-            return previousValue;
-          },[]);
-        }
-        return [];
-      }
-
-      class treeNode {
-
-        constructor(item){
-          this.name = item.name;
-          this.path = item.path;
-
-          this.breadcrumb = breadcumb(this.path);
-          this.linkedBreadcrumb = makeBreadcrumb(this.breadcrumb);
-          this.breadPyramid = (this.linkedBreadcrumb||[]).map(i => i.link);
-
-          this.items = {};
-          this.child = {};
-          this.value = false;
-        }
-
-        push(item){
-          return this.child[item.name] = item;
-        }
-
-        add(item){
-          return this.items[item.name] = item;
-        }
-
-        translate(value){
-          this.value = value;
-          return this;
-        }
-
-        toArray(){
-          return Object.keys(this.child).map((i)=>this.child[i]);
-        }
-
-        getChild(name){
-          return this.child[name] || null
-        }
-
-        assign(treeDeep)
-        {
-          const getNamesFrom = (i) => Object.keys(i) || [];
-          ((textNodes)=>textNodes.forEach(textNodesItem => (nodeInfo => {
-            textNodesItem = this.add(new treeNode(nodeInfo));
-            textNodesItem.translate(nodeInfo.value);
-          })(treeDeep.items[textNodesItem])))(getNamesFrom(treeDeep.items));
-          ((treeNodes)=>treeNodes.forEach(treeNodeItem=>(nodeInfo=>{
-            treeNodeItem = this.push(new treeNode(nodeInfo));
-            treeNodeItem.assign(nodeInfo);
-          })(treeDeep.child[treeNodeItem])))(getNamesFrom(treeDeep.child));
-        }
-
-      }
-
-      function breadcumb(b){
-        if(!b) return [];
-        return Array.isArray(b) ? b : b.split('.');
-      }
-
-      $tree.prototype = {
-        $set:function(path,rawTreeDeep){
-          if(rawTreeDeep) {
-            const deep = this.$deep(path);
-            if(deep) deep.assign(rawTreeDeep);
-          }
-          return this;
-        },
-        $deep:function(path){
-          if(!path) return this.root;
-          var ret = this.root;
-          angular.forEach(breadcumb(path),function(item){
-            if(ret) return ret = ret.getChild(item);
-          });
-          return ret;
-        },
-        newItem:function(data){
-          return new treeNode(data);
-        }
-      };
-      return $tree;
-    })())
-
-    .service('$open',function($tree,$http){
-
-      this.current = {};
-
-      const e = (()=>{
-        const subscribers = [];
-        return {
-          add(clb){
-            if(angular.isFunction(clb)) subscribers.push(clb);
-            return this;
-          },
-          emit(data){
-            return (subscribers||[]).forEach(c=>(c)(data));
-          }
-        }
-      })();
-
-      this.path = function(deep){
-        this.current = $tree.$deep(deep);
-        return e.emit(this.current);
-      };
-
-      this.subscribe = (clb) => e.add(clb);
-    })
-
-    .controller('root',function($http,session,$tree,dictionaryModal){
-
-      var $root = this;
-
-      $root.loaded = false;
-
-      $http.get('/init').then(function(response){
-        $root.loaded = session.init(response.data);
-        return $tree.$set(null,response.data.tree);
       });
 
       $root.copyPath = function($event){
@@ -277,58 +132,22 @@
         }
       };
 
-      $root.addWord = function(){
-        var item = $tree.newItem({});
-        item.isNew = true;
-        dictionaryModal.add(item);
+      $root.goToPath = function(path){
+        $opened.item = $tree.get(path);
       };
 
-      $root.editItem = function(item){
-        dictionaryModal.add(item);
+      $root.addWord = function () {
+        $itemModal($tree.new({
+          isNew : true,
+          $isItem : true,
+        }))
       };
 
-    })
-
-    .controller('menu',function($tree,$http,$open){
-
-      const $menu = this;
-
-      $menu.items = $tree.$deep().toArray();
-
-      $menu.reloadApp = function () {
-        $http.delete('/init').finally(() => location.reload(true))
+      $root.editItem = function (item) {
+        $itemModal(item)
       };
 
     })
-
-    .controller('content',function($open,session){
-
-      var $content = this;
-
-      $content.current = {};
-      $content.breadcrumb = [];
-      $content.hasList = false;
-
-      $content.languages = session.info.languages;
-
-      function checkHasList() {
-        $content.hasList = !!Object.keys($content.current.items).length;
-      }
-
-      $open.subscribe((item)=>{
-        $content.current = item;
-        $content.breadcrumb = $content.current.linkedBreadcrumb;
-        checkHasList();
-      });
-
-      $content.open = function (path) {
-        return $open.path(path);
-      };
-
-      $open.path();
-    })
-
-
 
     .factory('$modal',function($q, $templateCache, $http, $rootScope, $controller, $animate, $compile){
 
@@ -393,45 +212,43 @@
 
     })
 
-    .service('dictionaryModal',function($modal, $open){
+    .service('$itemModal',function($modal, $opened, $http){
 
-      var modal = new $modal({
-        templateUrl : '/modal.html',
-        controller: function($scope, session, $http){
-          $scope.languages = session.info.languages;
+      const modal = new $modal({
+        templateUrl : '/tpl/modal.html',
+        controller: function($scope){
 
+          $scope.options = $opened.options;
 
-          console.log($open.current.items);
+          $scope.inLoading = false;
 
-          $scope.translateTo = function(lang){
-
-            $http.get('https://translate.google.com.ua/translate_a/t?client=t&sl=en&tl=uk&hl=uk&v=1.0&source=is&q=hello')
-              .then(function (value) { console.log(value) })
-              .catch(function (reason) { console.error(reason) });
-
-
-            // $http.get('https://translation.googleapis.com/language/translate/v2',{
-            //   params : {
-            //     key : 'AIzaSyD2RH71oCzdnlvHRHRj3yxjNJMzf_iEbeU',
-            //     source : 'en-US',
-            //     target : 'uk-Ua',
-            //     q : 'Hi!'
-            //   }
-            // })
-            //   .then(function (value) {
-            //     console.log(value);
-            //   })
-            //   .catch(function (reason) { console.error(reason) })
+          $scope.translateAll = function(value){
+            $scope.inLoading = true;
+            $http.post('/translate',{value})
+              .then((res) => {
+                console.warn(res.data);
+              })
+              .finally(() => $scope.inLoading = false);
           }
 
         }
       });
 
-      return {
-        add: function(item) {
-          return modal.open(item).catch(function(reason){})
-        }
+      return function openItemModal(item) {
+        return modal.open(item)
       }
-    });
+    })
+
+    // DIRECTIVES
+    .directive('menuItem',function(){
+      return {
+        restrict : 'E',
+        templateUrl : '/tpl/_menu_item_.html',
+        replace : true,
+        scope : { item : '=' }
+      }
+    })
+
+    .name;
 
 })();

@@ -113,7 +113,7 @@ module.exports = function(appPath, projectPath, packageField) {
       if(items) {
         for(let i in items) {
           if(items.hasOwnProperty(i)) {
-            items[i] = items[i].substr(0, 1)[needToUppercase ? 'toUpperCase' : 'toLowerCase']() + items[i].substr(1);
+            items[i] = items[i].substr(0, 1)[needToUppercase ? 'toUpperCase' : 'toLowerCase']() + items[i].substr(1).toLowerCase();
           }
         }
       }

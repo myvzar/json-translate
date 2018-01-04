@@ -64,7 +64,18 @@ module.exports = class AppServer {
         })(req.url||'*');
 
         if(Action && Action.action) {
-          return Action.action.call(this, req, res);
+          return (new Promise( resolve => {
+            if(~['post', 'put', 'path'].indexOf((req.method || 'GET').toLowerCase())) {
+              let body = '';
+              req.on('data', (chunk) => {
+                body += chunk.toString()
+              });
+              req.on('end', () => resolve((() => {
+                try { return JSON.parse(body) }
+                catch (e) { return decodeURI(body) }
+              })()));
+            } else return resolve();
+          })).then((postData) => Action.action.call(this, req, res, postData));
         } else {
           res.writeHead(404, {"Content-Type": "text/html"});
           res.write(`<h1>Not found</h1>`);

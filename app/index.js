@@ -43,8 +43,13 @@ module.exports = (App) => {
             return res.sendJson(tree);
           });
 
-          // console.log(httpServer);
-          // console.log(tree);
+          httpServer.post('/translate',function(req, res, body){
+            const value = body.value || null;
+            if(!value) return res.sendJson({});
+            return App.translateToAll(value)
+              .then((item) => App.uppercaseCheck(item, value[0] === value[0].toUpperCase()))
+              .then((item) => res.sendJson(item))
+          });
 
       });
     });
