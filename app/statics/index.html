@@ -16,7 +16,7 @@
       <ul class="menu-list">
         <li><a ng-class="{ 'is-active': $root.menu.isActive()}" ng-click="$root.menu.open()">Root</a></li>
         <li class="main-menu-separator"></li>
-        <menu-item ng-repeat="(key, mItem) in $root.menu.items track by mItem.$path" ng-if="!mItem.$isItem" item="mItem"></menu-item>
+        <menu-item ng-repeat="(key, mItem) in $root.menu.items" ng-if="!mItem.$isItem" item="mItem"></menu-item>
       </ul>
     </aside>
   </div>

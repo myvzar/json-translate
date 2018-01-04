@@ -4,7 +4,7 @@
 
     .module('mabayaTranslate',[])
 
-    .factory('$treeItem',function($opened){
+    .factory('$treeItem',function($opened, $http){
 
       function makeBreadcrumb(pathArray){
         if(pathArray && pathArray.length)
@@ -36,7 +36,7 @@
 
           if(!this.$isItem) {
             this.items = {};
-            this.hasSubItems = Object.keys(item||{}).filter(i => !item[i].$isItem).length
+            this.hasSubItems = Object.keys(item||{}).filter(i => (typeof item[i] === 'object') && !item[i].$isItem).length
           }
 
           angular.forEach(item,(v, k) => {
@@ -61,6 +61,24 @@
 
         open() {
           return $opened.item = this;
+        }
+
+        getValues() {
+          if(!this.$isItem) return {};
+          const ret = {};
+          const $this = this;
+          angular.forEach($opened.options.languages,function(v, lang){
+            ret[lang] = $this[lang];
+          });
+          return ret;
+        }
+
+        save() {
+          return $http.post('/save',{
+            $isItem : this.$isItem,
+            $path : this.$path,
+            values : this.getValues()
+          })
         }
 
       }
@@ -94,6 +112,12 @@
 
       $tree.new = function(opt = {}){
         return new $treeItem(opt);
+      };
+
+      $tree.update = function (item) {
+        const deep = (item.$path||'').split('.');
+        const key = deep.pop();
+        $tree.get(deep.join('.'))[key] = item;
       }
 
     })
@@ -136,15 +160,20 @@
         $opened.item = $tree.get(path);
       };
 
+      function updateView(item) {
+        return item.save().then(() => $tree.update(item))
+      }
+
       $root.addWord = function () {
         $itemModal($tree.new({
           isNew : true,
           $isItem : true,
-        }))
+          parentBreadcrumb : $opened.item.$breadcrumb
+        })).then(updateView)
       };
 
       $root.editItem = function (item) {
-        $itemModal(item)
+        $itemModal(item).then(updateView)
       };
 
     })
@@ -212,7 +241,7 @@
 
     })
 
-    .service('$itemModal',function($modal, $opened, $http){
+    .service('$itemModal',function($modal, $opened, $http, $treeItem){
 
       const modal = new $modal({
         templateUrl : '/tpl/modal.html',
@@ -222,13 +251,33 @@
 
           $scope.inLoading = false;
 
+          $scope.resolve = angular.copy($scope.resolve);
+
           $scope.translateAll = function(value){
             $scope.inLoading = true;
             $http.post('/translate',{value})
-              .then((res) => {
-                console.warn(res.data);
-              })
+              .then((res) => angular.forEach(res.data,function(v, k){
+                if(v) $scope.resolve[k] = v;
+              }))
               .finally(() => $scope.inLoading = false);
+          };
+
+          $scope.save = function(){
+            const params = {};
+
+            if($scope.resolve.$isItem) {
+              params.$isItem = $scope.resolve.$isItem;
+              angular.forEach($scope.options.languages,(v,lang) => {
+                params[lang] = $scope.resolve[lang];
+              })
+            }
+
+            $scope.$resolve(new $treeItem(
+              params,
+              $scope.resolve.$name,
+              $scope.resolve.parentBreadcrumb||$scope.resolve.$breadcrumb.slice(0,-1)
+            ));
+
           }
 
         }

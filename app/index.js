@@ -51,6 +51,17 @@ module.exports = (App) => {
               .then((item) => res.sendJson(item))
           });
 
+          httpServer.post('/save',function(req, res, body){
+            if(body.$isItem) {
+              tree.addMultiple(body.$path||'', body.values);
+            } else {
+              const deep = (body.$path||'').split('.');
+              const key = deep.pop();
+              tree.getDeep(deep)[key] = {};
+            }
+            tree.save().then(() => res.sendJson({status : true}))
+          });
+
       });
     });
   }
