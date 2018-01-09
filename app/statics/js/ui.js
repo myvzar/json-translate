@@ -34,10 +34,7 @@
           this.$linkedBreadcrumb = makeBreadcrumb(this.$breadcrumb);
           this.$pyramidBreadcrumb = (this.$linkedBreadcrumb||[]).map(i => i.link);
 
-          if(!this.$isItem) {
-            this.items = {};
-            this.hasSubItems = Object.keys(item||{}).filter(i => (typeof item[i] === 'object') && !item[i].$isItem).length
-          }
+          if(!this.$isItem) { this.items = {}; }
 
           angular.forEach(item,(v, k) => {
             if(this.$isItem) {
@@ -46,6 +43,14 @@
               this.items[k] = new $treeItem(v, k, this.$breadcrumb);
             }
           });
+
+          this.updateSub();
+        }
+
+        updateSub() {
+          if(!this.$isItem) {
+            this.hasSubItems = Object.keys(this.items||{}).filter(i => (typeof this.items[i] === 'object') && !this.items[i].$isItem).length
+          }
         }
 
         isActive() {
@@ -117,7 +122,10 @@
       $tree.update = function (item) {
         const deep = (item.$path||'').split('.');
         const key = deep.pop();
-        $tree.get(deep.join('.'))[key] = item;
+        const deepItem  = $tree.get(deep.join('.'));
+
+        deepItem.items[key] = item;
+        deepItem.updateSub();
       }
 
     })
