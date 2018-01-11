@@ -24,7 +24,7 @@
         <label class="label" ng-bind="::lInfo.display"></label>
         <div class="field has-addons">
           <div class="control" style="flex-grow: 1;">
-            <input class="input" type="text" ng-model="resolve[lang]">
+            <input class="input" type="text" ng-model="resolve[lang]" ng-keyup="(lang === options.defLang) && tryParse($event,resolve[lang])">
           </div>
           <div class="control" ng-if="::(lang === options.defLang)">
             <button class="button" ng-disabled="!resolve[lang]" ng-click="translateAll(resolve[lang])">

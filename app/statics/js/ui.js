@@ -265,9 +265,25 @@
             $scope.inLoading = true;
             $http.post('/translate',{value})
               .then((res) => angular.forEach(res.data,function(v, k){
-                if(v) $scope.resolve[k] = v;
+                if(v && !$scope.resolve[k]) {
+                  $scope.resolve[k] = v;
+                }
               }))
               .finally(() => $scope.inLoading = false);
+          };
+
+          $scope.tryParse = function ($event,value) {
+            if($event.ctrlKey && ($event.which === 13 || $event.which === 86)) {
+              var res = null;
+              try { res = JSON.parse(value) }
+              catch (e) { res = null }
+              $scope.resolve[$scope.options.defLang] = '';
+              if(res) return angular.forEach(res,function(lVal, l){
+                if($scope.options.languages.hasOwnProperty(l)) {
+                  $scope.resolve[l] = lVal;
+                }
+              })
+            }
           };
 
           $scope.save = function(){
