@@ -277,7 +277,7 @@
               var res = null;
               try { res = JSON.parse(value) }
               catch (e) { res = null }
-              $scope.resolve[$scope.options.defLang] = '';
+			  if(res) { $scope.resolve[$scope.options.defLang] = ''; }
               if(res) return angular.forEach(res,function(lVal, l){
                 if($scope.options.languages.hasOwnProperty(l)) {
                   $scope.resolve[l] = lVal;

@@ -1,6 +1,6 @@
 {
   "name": "package-json-translate",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "gui for translations in json files",
   "main": "index.js",
   "scripts": {},
