@@ -78,7 +78,7 @@ module.exports = function(appPath, projectPath, packageField) {
         .catch((e) => console.error('Need to init project', e))
     }
 
-    getTree(optionField) {
+    getTree() {
       return this.getPackage()
         .then(packageJson => packageJson[this.packageField])
         .then(opts => {
@@ -118,6 +118,10 @@ module.exports = function(appPath, projectPath, packageField) {
         }
       }
       return items;
+    }
+
+    readJsonFile(file) {
+      return json.read(file)
     }
 
   })

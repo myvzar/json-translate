@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 const field = 'json-translate';
+const path = require('path');
 
-const App = (require(
-  require('path').resolve(__dirname,'modules','app.js')))
-(__dirname, process.cwd(), field);
+const workingDir = 'D:\\mabaya\\backoffice2' || process.cwd();
+const AppService = require(path.resolve(__dirname, 'modules', 'app.js'))
+
+const App = AppService(__dirname, workingDir, field);
 
 App.task('start', 'Start translate current project', (require('./app'))(App), true);
 
@@ -60,6 +62,34 @@ App.task('add', 'Add new language to current project',(options) => {
       });
 
   } else return console.error('--lang in required');
+});
+
+App.task('file', 'Upload changes from file', (options) => {
+
+  if (!options.file) {
+    throw new Error('Please set file in --file parameter');
+  }
+
+  const loadTree = () => App.getTree().then(($tree) => $tree.init());
+
+  const parsedFile = () => App.readJsonFile(options.file);
+
+  return App
+    .initPackage()
+    .then(() => Promise.all([
+      loadTree(),
+      parsedFile()
+    ]))
+    .then((par) => {
+      const [tree, newFile] = par;
+      Object.keys(newFile)
+        .forEach((fk) => Object.keys(newFile[fk])
+          .forEach((fkl) => tree.changeLanguageValueOn(fk, newFile[fk][fkl], fkl)));
+      return tree;
+    })
+    .then(tree => tree.save())
+    .then(() => {console.log('File changes saved')})
+    .catch(e => console.error(e));
 });
 
 App.options({

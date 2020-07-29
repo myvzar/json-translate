@@ -65,7 +65,7 @@ module.exports = class $tree {
   }
 
   addMultiple(deep,items) {
-    deep = (deep||'').split('.');
+    deep = this.parseDeep(deep);
     const key = deep.pop();
     (this.getDeep(deep))[key] = new treeItem(items);
     return this;
@@ -102,6 +102,16 @@ module.exports = class $tree {
     return new Promise((resolve) => {
       return resolve(processLayer(this.items));
     });
+  }
+
+  parseDeep(deep) {
+    return (deep||'').split('.');
+  }
+
+  changeLanguageValueOn(deep, value, language) {
+    const lItem = this.getDeep(this.parseDeep(deep));
+    lItem[language] = value;
+    return lItem;
   }
 
 };
