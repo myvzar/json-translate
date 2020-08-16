@@ -3,7 +3,7 @@
 const field = 'json-translate';
 const path = require('path');
 
-const workingDir = 'D:\\mabaya\\backoffice2' || process.cwd();
+const workingDir = process.cwd();
 const AppService = require(path.resolve(__dirname, 'modules', 'app.js'))
 
 const App = AppService(__dirname, workingDir, field);
