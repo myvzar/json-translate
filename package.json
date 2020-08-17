@@ -1,6 +1,6 @@
 {
   "name": "package-json-translate",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "gui for translations in json files",
   "main": "index.js",
   "scripts": {},
@@ -24,6 +24,6 @@
   },
   "homepage": "https://github.com/myvzar/json-translate#readme",
   "dependencies": {
-    "google-translate-api": "^2.3.0"
+    "@vitalets/google-translate-api": "^3.0.0"
   }
 }

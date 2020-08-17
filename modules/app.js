@@ -1,5 +1,5 @@
 const path = require('path');
-const translate = require('google-translate-api');
+const translate = require('@vitalets/google-translate-api');
 
 const argv = require(path.resolve(__dirname,'argv'));
 const json = require(path.resolve(__dirname,'json'));
@@ -98,7 +98,7 @@ module.exports = function(appPath, projectPath, packageField) {
         .then((r) => {
           const result = {};
           result[this.package.defLang] = dVal;
-          r.forEach(tri => result[tri.t] = tri.res);
+          r.forEach(tri => tri && tri.t && (result[tri.t] = tri.res));
           return result;
         });
     }
