@@ -24,6 +24,6 @@
   },
   "homepage": "https://github.com/myvzar/json-translate#readme",
   "dependencies": {
-    "@vitalets/google-translate-api": "^7.0.0"
+    "@vitalets/google-translate-api": "^9.1.0"
   }
 }
